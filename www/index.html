@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Meu Caixa</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F5F6F2;--card:#FFFFFF;--ink:#17282A;--mute:#667876;--line:#E1E6E2;--in:#1F8A5B;--out:#C8453A;--accent:#17282A;--onaccent:#F5F6F2;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101A1B;--card:#192628;--ink:#EAF0EC;--mute:#92A6A3;--line:#2A3C3E;--in:#4CC38A;--out:#F0786C;--accent:#EAF0EC;--onaccent:#101A1B;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#101A1B;--card:#192628;--ink:#EAF0EC;--mute:#92A6A3;--line:#2A3C3E;--in:#4CC38A;--out:#F0786C;--accent:#EAF0EC;--onaccent:#101A1B;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"DM Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.4}
+main{max-width:480px;margin:0 auto;padding:20px 16px 40px}
+header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px}
+h1{font-size:22px;margin:0;font-weight:700;letter-spacing:-.01em}
+.mes{color:var(--mute);font-size:14px}
+section{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:14px}
+h2{font-size:15px;margin:0 0 12px;font-weight:700}
+.donut{display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:center}
+.donut svg{width:170px;height:170px;flex:none}
+.leg{flex:1;min-width:150px;display:grid;gap:7px;font-size:14px}
+.leg div{display:flex;align-items:center;gap:8px}
+.leg i{width:10px;height:10px;border-radius:3px;flex:none}
+.leg b{margin-left:auto;font-weight:500;font-variant-numeric:tabular-nums}
+.leg span.p{color:var(--mute);font-size:12px;min-width:34px;text-align:right}
+.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:0}
+.cols div{padding:0 10px;border-left:1px solid var(--line)}
+.cols div:first-child{border-left:0;padding-left:0}
+.cols small{display:block;color:var(--mute);font-size:13px;margin-bottom:4px}
+.cols strong{font-size:17px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.in{color:var(--in)}.out{color:var(--out)}
+.ask{display:flex;gap:8px}
+.ask input{flex:1;min-width:0;font:inherit;font-size:16px;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+button{font:inherit;cursor:pointer;border:0;border-radius:12px;padding:0 16px;background:var(--accent);color:var(--onaccent);font-weight:700;min-height:46px}
+button.mic{background:var(--bg);color:var(--ink);border:1px solid var(--line);padding:0 14px}
+button.mic.on{background:var(--out);color:#fff;border-color:var(--out)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--in);outline-offset:2px}
+.hint{color:var(--mute);font-size:13px;margin:10px 0 0}
+.msg{margin-top:10px;font-size:14px;min-height:20px}
+ul{list-style:none;margin:0;padding:0}
+li{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+li:first-child{border-top:0}
+li .d{flex:1;min-width:0}
+li .d span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+li .d small{color:var(--mute);font-size:12px}
+li .v{font-variant-numeric:tabular-nums;font-weight:500}
+li button{background:none;color:var(--mute);min-height:32px;padding:0 8px;font-weight:400}
+.foot{text-align:center}
+.foot button{background:none;color:var(--mute);font-weight:400;font-size:13px;text-decoration:underline}
+@media (prefers-reduced-motion:no-preference){.donut circle{transition:stroke-dasharray .4s}}
+</style>
+</head>
+<body>
+<main>
+<header><h1>Meu Caixa</h1><span class="mes" id="mes"></span></header>
+
+<section aria-labelledby="h-gastos">
+<h2 id="h-gastos">Gastos por tipo</h2>
+<div class="donut"><svg viewBox="0 0 120 120" id="rosca" role="img" aria-label="Gráfico de gastos por tipo"></svg><div class="leg" id="leg"></div></div>
+</section>
+
+<section aria-labelledby="h-saldo">
+<h2 id="h-saldo">Saldo</h2>
+<div class="cols">
+<div><small>Entrada</small><strong class="in" id="tIn">R$ 0,00</strong></div>
+<div><small>Saída</small><strong class="out" id="tOut">R$ 0,00</strong></div>
+<div><small>Total</small><strong id="tTot">R$ 0,00</strong></div>
+</div>
+</section>
+
+<section aria-labelledby="h-add">
+<h2 id="h-add">Registrar</h2>
+<div class="ask">
+<input id="txt" type="text" placeholder="gastei 35 no mercado" autocomplete="off" aria-label="Descreva o gasto ou a entrada">
+<button class="mic" id="mic" type="button" aria-label="Falar">🎤</button>
+<button id="ok" type="button">Salvar</button>
+</div>
+<div class="msg" id="msg" aria-live="polite"></div>
+<p class="hint">Exemplos: “paguei 120 de luz”, “uber 18,50”, “recebi 2500 de salário”.</p>
+</section>
+
+<section aria-labelledby="h-hist">
+<h2 id="h-hist">Últimos lançamentos</h2>
+<ul id="lista"></ul>
+</section>
+
+<p class="foot"><button id="limpar" type="button">Apagar todos os lançamentos</button></p>
+</main>
+
+<script>
+(function(){
+var CATS={
+ "Mercado":{c:"#2E9E6B",k:["mercado","supermercado","feira","padaria","açougue","acougue","compras"]},
+ "Alimentação":{c:"#E08A2E",k:["restaurante","lanche","pizza","ifood","almoço","almoco","jantar","café","cafe","hamburguer","sorvete","comida"]},
+ "Transporte":{c:"#3B82C4",k:["uber","99","ônibus","onibus","gasolina","combustível","combustivel","estacionamento","passagem","táxi","taxi","pedágio"]},
+ "Moradia":{c:"#8A6BC9",k:["aluguel","luz","energia","água","agua","internet","condomínio","condominio","gás","gas"]},
+ "Saúde":{c:"#D4577A",k:["farmácia","farmacia","remédio","remedio","médico","medico","consulta","dentista","academia"]},
+ "Lazer":{c:"#C9A227",k:["cinema","netflix","spotify","bar","show","jogo","viagem","streaming","festa"]},
+ "Outros":{c:"#7C8C8A",k:[]}
+};
+var INC=["recebi","ganhei","salário","salario","entrada","depósito","deposito","pagaram","caiu","renda","freela","venda","vendi","reembolso"];
+var KEY="meucaixa:v1",tx=[];
+function load(){try{var r=localStorage.getItem(KEY);if(r)return JSON.parse(r)}catch(e){}return null}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(tx))}catch(e){}}
+function today(){return new Date().toISOString().slice(0,10)}
+var seed=load();
+tx=seed||[
+ {id:1,t:"in",v:3200,c:"Salário",d:"Salário",dt:today()},
+ {id:2,t:"out",v:650,c:"Moradia",d:"Aluguel",dt:today()},
+ {id:3,t:"out",v:420,c:"Mercado",d:"Mercado",dt:today()},
+ {id:4,t:"out",v:180,c:"Transporte",d:"Gasolina",dt:today()},
+ {id:5,t:"out",v:130,c:"Alimentação",d:"Pizza",dt:today()},
+ {id:6,t:"out",v:90,c:"Lazer",d:"Cinema",dt:today()}
+];
+var $=function(i){return document.getElementById(i)};
+function brl(n){return n.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+
+function parse(s){
+ var low=s.toLowerCase();
+ var m=low.match(/(\d{1,3}(?:\.\d{3})+(?:,\d{1,2})?|\d+(?:[.,]\d{1,2})?)/);
+ if(!m)return null;
+ var raw=m[1];
+ if(/\.\d{3}/.test(raw))raw=raw.replace(/\./g,"");
+ var v=parseFloat(raw.replace(",","."));
+ if(!(v>0))return null;
+ var t=INC.some(function(w){return low.indexOf(w)>-1})?"in":"out";
+ var cat=t==="in"?"Entrada":"Outros";
+ if(t==="out"){for(var n in CATS){if(CATS[n].k.some(function(w){return new RegExp("(^|[^a-zà-ú])"+w+"([^a-zà-ú]|$)").test(low)})){cat=n;break}}}
+ var d=s.replace(m[0],"").replace(/\b(gastei|paguei|comprei|recebi|ganhei|reais|real|r\$|de|do|da|no|na|em|com|um|uma)\b/gi," ").replace(/\s+/g," ").trim();
+ if(!d)d=cat;
+ d=d.charAt(0).toUpperCase()+d.slice(1);
+ return {id:Date.now(),t:t,v:v,c:cat,d:d,dt:today()};
+}
+
+function render(){
+ var now=new Date();
+ $("mes").textContent=now.toLocaleDateString("pt-BR",{month:"long",year:"numeric"});
+ var i=0,o=0,by={};
+ tx.forEach(function(x){if(x.t==="in")i+=x.v;else{o+=x.v;by[x.c]=(by[x.c]||0)+x.v}});
+ $("tIn").textContent=brl(i);$("tOut").textContent=brl(o);
+ var tot=$("tTot");tot.textContent=brl(i-o);tot.className=(i-o)<0?"out":"in";
+ var names=Object.keys(by).sort(function(a,b){return by[b]-by[a]});
+ var svg='<circle cx="60" cy="60" r="42" fill="none" stroke="var(--line)" stroke-width="18"/>';
+ var C=2*Math.PI*42,off=0,leg="";
+ names.forEach(function(n){
+  var f=by[n]/o,len=f*C,col=(CATS[n]||CATS.Outros).c;
+  svg+='<circle cx="60" cy="60" r="42" fill="none" stroke="'+col+'" stroke-width="18" stroke-dasharray="'+len+' '+(C-len)+'" stroke-dashoffset="'+(-off)+'" transform="rotate(-90 60 60)"/>';
+  off+=len;
+  leg+='<div><i style="background:'+col+'"></i>'+esc(n)+'<b>'+brl(by[n])+'</b><span class="p">'+Math.round(f*100)+'%</span></div>';
+ });
+ if(!names.length){leg='<div>Nenhum gasto ainda.</div>'}
+ svg+='<text x="60" y="58" text-anchor="middle" font-size="9" fill="var(--mute)">Total gasto</text><text x="60" y="71" text-anchor="middle" font-size="10" font-weight="700" fill="var(--ink)">'+brl(o)+'</text>';
+ $("rosca").innerHTML=svg;$("leg").innerHTML=leg;
+ var h="";
+ tx.slice().sort(function(a,b){return b.id-a.id}).slice(0,8).forEach(function(x){
+  h+='<li><div class="d"><span>'+esc(x.d)+'</span><small>'+esc(x.c)+'</small></div><span class="v '+(x.t==="in"?"in":"out")+'">'+(x.t==="in"?"+ ":"− ")+brl(x.v)+'</span><button type="button" data-id="'+x.id+'" aria-label="Excluir">✕</button></li>';
+ });
+ $("lista").innerHTML=h||'<li><div class="d">Nada por aqui. Registre seu primeiro lançamento.</div></li>';
+}
+
+function add(){
+ var s=$("txt").value.trim();
+ if(!s){$("msg").textContent="Digite ou fale um lançamento.";return}
+ var x=parse(s);
+ if(!x){$("msg").textContent="Não achei o valor. Inclua um número, como “gastei 35 no mercado”.";return}
+ tx.push(x);save();render();
+ $("txt").value="";
+ $("msg").textContent="Salvo: "+x.d+" · "+brl(x.v)+" em "+x.c+".";
+}
+$("ok").onclick=add;
+$("txt").addEventListener("keydown",function(e){if(e.key==="Enter")add()});
+$("lista").addEventListener("click",function(e){
+ var id=e.target.getAttribute&&e.target.getAttribute("data-id");
+ if(id){tx=tx.filter(function(x){return String(x.id)!==id});save();render()}
+});
+$("limpar").onclick=function(){tx=[];save();render();$("msg").textContent="Lançamentos apagados."};
+
+var SR=window.SpeechRecognition||window.webkitSpeechRecognition,rec=null;
+function nativeSR(){var C=window.Capacitor;return C&&C.isNativePlatform&&C.isNativePlatform()&&C.Plugins&&C.Plugins.SpeechRecognition}
+$("mic").onclick=async function(){
+ var N=nativeSR();
+ if(N){
+  try{
+   var perm=await N.requestPermissions();
+   if(perm.speechRecognition!=="granted"){$("msg").textContent="Permita o microfone nas configurações do app.";return}
+   $("mic").classList.add("on");$("msg").textContent="Ouvindo…";
+   var r=await N.start({language:"pt-BR",maxResults:1,popup:false,partialResults:false});
+   $("mic").classList.remove("on");
+   if(r&&r.matches&&r.matches[0]){$("txt").value=r.matches[0];add()}else{$("msg").textContent="Não entendi. Tente de novo."}
+  }catch(err){$("mic").classList.remove("on");$("msg").textContent="Não consegui ouvir. Tente de novo ou digite."}
+  return;
+ }
+ if(!SR){$("msg").textContent="Sem reconhecimento de voz aqui. Use o microfone do teclado.";return}
+ if(rec){rec.stop();return}
+ try{
+  rec=new SR();rec.lang="pt-BR";rec.interimResults=false;
+  rec.onresult=function(e){$("txt").value=e.results[0][0].transcript;add()};
+  rec.onerror=function(){$("msg").textContent="Não consegui acessar o microfone."};
+  rec.onend=function(){rec=null;$("mic").classList.remove("on")};
+  rec.start();$("mic").classList.add("on");$("msg").textContent="Ouvindo…";
+ }catch(err){rec=null;$("msg").textContent="Voz indisponível. Digite o lançamento."}
+};
+render();
+})();
+</script>
+</body>
+</html>
