@@ -17,6 +17,7 @@ jobs:
           java-version: 21
       - run: npm install
       - run: npx cap add android
+      - run: mkdir -p ~/.android && cp debug.keystore ~/.android/debug.keystore
       - run: npx cap sync android
       - run: chmod +x gradlew && ./gradlew assembleDebug
         working-directory: android
