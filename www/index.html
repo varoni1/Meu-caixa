@@ -50,6 +50,13 @@ li .v{font-variant-numeric:tabular-nums;font-weight:500}
 li button{background:none;color:var(--mute);min-height:32px;padding:0 8px;font-weight:400}
 .foot{text-align:center}
 .foot button{background:none;color:var(--mute);font-weight:400;font-size:13px;text-decoration:underline}
+li.ed{display:block}
+.ef{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ef input,.ef select{font:inherit;font-size:16px;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);min-width:0;width:100%}
+.ef .w{grid-column:1/-1}
+.ef .bt{grid-column:1/-1;display:flex;gap:8px}
+.ef .bt button{flex:1}
+.ef .bt .cn{background:var(--bg);color:var(--ink);border:1px solid var(--line)}
 @media (prefers-reduced-motion:no-preference){.donut circle{transition:stroke-dasharray .4s}}
 </style>
 </head>
@@ -102,7 +109,7 @@ var CATS={
  "Outros":{c:"#7C8C8A",k:[]}
 };
 var INC=["recebi","ganhei","salário","salario","entrada","depósito","deposito","pagaram","caiu","renda","freela","venda","vendi","reembolso"];
-var KEY="meucaixa:v1",tx=[];
+var KEY="meucaixa:v1",tx=[],editId=null;
 function load(){try{var r=localStorage.getItem(KEY);if(r)return JSON.parse(r)}catch(e){}return null}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(tx))}catch(e){}}
 function today(){return new Date().toISOString().slice(0,10)}
@@ -156,8 +163,13 @@ function render(){
  svg+='<text x="60" y="58" text-anchor="middle" font-size="9" fill="var(--mute)">Total gasto</text><text x="60" y="71" text-anchor="middle" font-size="10" font-weight="700" fill="var(--ink)">'+brl(o)+'</text>';
  $("rosca").innerHTML=svg;$("leg").innerHTML=leg;
  var h="";
- tx.slice().sort(function(a,b){return b.id-a.id}).slice(0,8).forEach(function(x){
-  h+='<li><div class="d"><span>'+esc(x.d)+'</span><small>'+esc(x.c)+'</small></div><span class="v '+(x.t==="in"?"in":"out")+'">'+(x.t==="in"?"+ ":"− ")+brl(x.v)+'</span><button type="button" data-id="'+x.id+'" aria-label="Excluir">✕</button></li>';
+ tx.slice().sort(function(a,b){return b.id-a.id}).slice(0,15).forEach(function(x){
+  if(String(x.id)===String(editId)){
+   var co="";Object.keys(CATS).forEach(function(n){co+='<option'+(n===x.c?' selected':'')+'>'+n+'</option>'});
+   h+='<li class="ed"><div class="ef"><input class="w" id="eD" value="'+esc(x.d)+'" aria-label="Descrição"><input id="eV" inputmode="decimal" value="'+String(x.v).replace(".",",")+'" aria-label="Valor"><select id="eT" aria-label="Tipo"><option value="out"'+(x.t==="out"?" selected":"")+'>Saída</option><option value="in"'+(x.t==="in"?" selected":"")+'>Entrada</option></select><select class="w" id="eC" aria-label="Categoria">'+co+'</select><div class="bt"><button type="button" data-act="sv" data-id="'+x.id+'">Salvar</button><button type="button" class="cn" data-act="cn">Cancelar</button></div></div></li>';
+   return;
+  }
+  h+='<li><div class="d"><span>'+esc(x.d)+'</span><small>'+esc(x.c)+'</small></div><span class="v '+(x.t==="in"?"in":"out")+'">'+(x.t==="in"?"+ ":"− ")+brl(x.v)+'</span><button type="button" data-act="ed" data-id="'+x.id+'" aria-label="Editar">✎</button><button type="button" data-act="rm" data-id="'+x.id+'" aria-label="Excluir">✕</button></li>';
  });
  $("lista").innerHTML=h||'<li><div class="d">Nada por aqui. Registre seu primeiro lançamento.</div></li>';
 }
@@ -174,8 +186,17 @@ function add(){
 $("ok").onclick=add;
 $("txt").addEventListener("keydown",function(e){if(e.key==="Enter")add()});
 $("lista").addEventListener("click",function(e){
- var id=e.target.getAttribute&&e.target.getAttribute("data-id");
- if(id){tx=tx.filter(function(x){return String(x.id)!==id});save();render()}
+ var el=e.target.closest&&e.target.closest("button[data-act]");if(!el)return;
+ var act=el.getAttribute("data-act"),id=el.getAttribute("data-id");
+ if(act==="rm"){if(confirm("Excluir este lançamento?")){tx=tx.filter(function(x){return String(x.id)!==id});save();render()}}
+ else if(act==="ed"){editId=id;render()}
+ else if(act==="cn"){editId=null;render()}
+ else if(act==="sv"){
+  var v=parseFloat($("eV").value.replace(/\./g,"").replace(",","."));
+  if(!(v>0)){$("msg").textContent="Valor inválido.";return}
+  tx.forEach(function(x){if(String(x.id)===id){x.v=v;x.d=$("eD").value.trim()||x.d;x.t=$("eT").value;x.c=x.t==="in"?"Entrada":$("eC").value}});
+  editId=null;save();render();$("msg").textContent="Lançamento atualizado."
+ }
 });
 $("limpar").onclick=function(){tx=[];save();render();$("msg").textContent="Lançamentos apagados."};
 
